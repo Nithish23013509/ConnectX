@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import api from "../services/api";
 
 function WhatsAppConnect() {
     const navigate = useNavigate();
@@ -28,24 +29,12 @@ function WhatsAppConnect() {
                     console.log("Authorization code received");
 
                     try {
-                        const backendResponse = await fetch(
-                            "https://happening-eating-giveaway.ngrok-free.dev/api/apps/whatsapp/embedded-signup",
-                            {
-                                method: "POST",
-                                headers: {
-                                    "Content-Type": "application/json",
-                                    "Authorization": `Bearer ${localStorage.getItem("connectx_token")}`
-                                },
-                                body: JSON.stringify({ code: code })
-                            }
+                        const backendResponse = await api.post(
+                            "/apps/whatsapp/embedded-signup",
+                            { code: code }
                         );
 
-                        const result = await backendResponse.text();
-                        console.log("Backend response:", result);
-
-                        if (!backendResponse.ok) {
-                            throw new Error(result);
-                        }
+                        console.log("Backend response:", backendResponse.data);
 
                         setMessage("WhatsApp authorization received by ConnectX.");
                         setIsSuccess(true);
