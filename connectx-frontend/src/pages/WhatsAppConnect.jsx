@@ -100,7 +100,6 @@ function WhatsAppConnect() {
                     <button 
                         className="btn-secondary" 
                         onClick={() => navigate("/dashboard")}
-                        disabled={loading}
                     >
                         Back to Dashboard
                     </button>
