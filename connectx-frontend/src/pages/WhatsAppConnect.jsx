@@ -18,7 +18,7 @@ function WhatsAppConnect() {
         setMessage("");
 
         window.FB.login(
-            (response) => {
+            async (response) => {
                 console.log("Embedded Signup response:", response);
                 setLoading(false);
 
@@ -26,11 +26,33 @@ function WhatsAppConnect() {
                     const code = response.authResponse.code;
                     console.log("Authorization code received");
 
-                    // NEXT STEP: Send this code to Spring Boot.
-                    // Do not save it in localStorage.
-                    
-                    setMessage("WhatsApp authorization successful.");
-                    setIsSuccess(true);
+                    try {
+                        const backendResponse = await fetch(
+                            "https://happening-eating-giveaway.ngrok-free.dev/api/apps/whatsapp/embedded-signup",
+                            {
+                                method: "POST",
+                                headers: {
+                                    "Content-Type": "application/json",
+                                    "Authorization": `Bearer ${localStorage.getItem("connectx_token")}`
+                                },
+                                body: JSON.stringify({ code: code })
+                            }
+                        );
+
+                        const result = await backendResponse.text();
+                        console.log("Backend response:", result);
+
+                        if (!backendResponse.ok) {
+                            throw new Error(result);
+                        }
+
+                        setMessage("WhatsApp authorization received by ConnectX.");
+                        setIsSuccess(true);
+                    } catch (error) {
+                        console.error("Embedded Signup backend error:", error);
+                        setMessage("Authorization succeeded, but ConnectX could not complete the connection.");
+                        setIsSuccess(false);
+                    }
                 } else {
                     setMessage("WhatsApp connection was cancelled or unsuccessful.");
                     setIsSuccess(false);
