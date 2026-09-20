@@ -33,7 +33,7 @@ public class MetaGraphService {
 
     public JsonNode debugToken(String oauthUserToken) {
 
-        String url = UriComponentsBuilder
+        java.net.URI uri = UriComponentsBuilder
                 .fromUriString(
                         "https://graph.facebook.com/"
                                 + graphApiVersion
@@ -41,7 +41,7 @@ public class MetaGraphService {
                 )
                 .queryParam("input_token", oauthUserToken)
                 .build()
-                .toUriString();
+                .toUri();
 
         org.springframework.http.HttpHeaders headers = new org.springframework.http.HttpHeaders();
         headers.setBearerAuth(systemUserAccessToken);
@@ -51,7 +51,7 @@ public class MetaGraphService {
 
         org.springframework.http.ResponseEntity<String> response =
                 restTemplate.exchange(
-                        url,
+                        uri,
                         org.springframework.http.HttpMethod.GET,
                         entity,
                         String.class
@@ -74,7 +74,7 @@ public class MetaGraphService {
 
     public String exchangeAuthorizationCode(String code) {
 
-        String url = UriComponentsBuilder
+        java.net.URI uri = UriComponentsBuilder
                 .fromUriString(
                         "https://graph.facebook.com/"
                                 + graphApiVersion
@@ -85,12 +85,12 @@ public class MetaGraphService {
                 .queryParam("code", code)
                 .queryParam("redirect_uri", redirectUri)
                 .build()
-                .toUriString();
+                .toUri();
 
         try {
 
             String response = restTemplate.getForObject(
-                    url,
+                    uri,
                     String.class
             );
 
