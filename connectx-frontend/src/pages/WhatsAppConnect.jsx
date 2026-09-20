@@ -1,100 +1,88 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import api from "../services/api";
 
 function WhatsAppConnect() {
-
     const navigate = useNavigate();
+    const [loading, setLoading] = useState(false);
+    const [message, setMessage] = useState("");
+    const [isSuccess, setIsSuccess] = useState(false);
 
-    const [form, setForm] = useState({
-        businessAccountId: "",
-        phoneNumberId: "",
-        accountName: ""
-    });
-
-    const [error, setError] = useState("");
-    const [success, setSuccess] = useState("");
-
-    const handleChange = (e) => {
-
-        setForm({
-            ...form,
-            [e.target.name]: e.target.value
-        });
-    };
-
-    const handleSubmit = async (e) => {
-
-        e.preventDefault();
-
-        setError("");
-        setSuccess("");
-
-        try {
-
-            await api.post(
-                "/apps/whatsapp/connect",
-                form
-            );
-
-            setSuccess(
-                "WhatsApp connected successfully."
-            );
-
-            setTimeout(() => {
-                navigate("/dashboard");
-            }, 1000);
-
-        } catch (error) {
-
-            setError(
-                error.response?.data?.message ||
-                "Unable to connect WhatsApp."
-            );
+    const launchWhatsAppSignup = () => {
+        if (!window.FB) {
+            setMessage("Meta SDK is still loading. Please try again.");
+            setIsSuccess(false);
+            return;
         }
+
+        setLoading(true);
+        setMessage("");
+
+        window.FB.login(
+            (response) => {
+                console.log("Embedded Signup response:", response);
+                setLoading(false);
+
+                if (response.authResponse?.code) {
+                    const code = response.authResponse.code;
+                    console.log("Authorization code received");
+
+                    // NEXT STEP: Send this code to Spring Boot.
+                    // Do not save it in localStorage.
+                    
+                    setMessage("WhatsApp authorization successful.");
+                    setIsSuccess(true);
+                } else {
+                    setMessage("WhatsApp connection was cancelled or unsuccessful.");
+                    setIsSuccess(false);
+                }
+            },
+            {
+                config_id: "3428342227347876",
+                response_type: "code",
+                override_default_response_type: true,
+                extras: {
+                    setup: {}
+                }
+            }
+        );
     };
 
     return (
         <div className="app-container">
             <div className="auth-panel">
                 <h1>Connect WhatsApp</h1>
-                <p>Link your WhatsApp Business account to ConnectX.</p>
+                <p>Connect your WhatsApp Business account securely through Meta.</p>
 
-                {error && <div className="error-msg">{error}</div>}
-                {success && <div className="success-msg">{success}</div>}
+                {message && (
+                    <div className={isSuccess ? "success-msg" : "error-msg"}>
+                        {message}
+                    </div>
+                )}
 
-                <form onSubmit={handleSubmit}>
-                    <input
-                        name="accountName"
-                        placeholder="Business Name (Optional)"
-                        value={form.accountName}
-                        onChange={handleChange}
-                    />
-
-                    <input
-                        name="businessAccountId"
-                        placeholder="WhatsApp Business Account ID"
-                        value={form.businessAccountId}
-                        onChange={handleChange}
-                        required
-                    />
-
-                    <input
-                        name="phoneNumberId"
-                        placeholder="Phone Number ID"
-                        value={form.phoneNumberId}
-                        onChange={handleChange}
-                        required
-                    />
-
-                    <button type="submit">
-                        Connect WhatsApp
+                <div style={{ display: "flex", flexDirection: "column", gap: "1rem", marginTop: "2rem" }}>
+                    <button
+                        onClick={launchWhatsAppSignup}
+                        disabled={loading}
+                        style={{ 
+                            background: "var(--whatsapp)", 
+                            color: "white",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            gap: "0.5rem"
+                        }}
+                    >
+                        {loading ? "Opening Meta..." : "Continue with Meta"}
                     </button>
-                </form>
 
-                <button className="btn-secondary" onClick={() => navigate("/dashboard")}>
-                    Cancel
-                </button>
+                    <button 
+                        className="btn-secondary" 
+                        onClick={() => navigate("/dashboard")}
+                        disabled={loading}
+                    >
+                        Back to Dashboard
+                    </button>
+                </div>
             </div>
         </div>
     );
