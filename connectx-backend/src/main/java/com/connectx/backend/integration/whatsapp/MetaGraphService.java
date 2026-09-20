@@ -24,9 +24,6 @@ public class MetaGraphService {
     @Value("${meta.system-user-access-token}")
     private String systemUserAccessToken;
 
-    @Value("${meta.redirect-uri}")
-    private String redirectUri;
-
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     private final RestTemplate restTemplate = new RestTemplate();
@@ -72,13 +69,7 @@ public class MetaGraphService {
         }
     }
 
-    public String exchangeAuthorizationCode(String code, String frontendRedirectUri) {
-
-        String actualRedirectUri = (frontendRedirectUri != null && !frontendRedirectUri.isBlank()) 
-                ? frontendRedirectUri 
-                : this.redirectUri;
-
-        System.out.println("Using redirect_uri: [" + actualRedirectUri + "]");
+    public String exchangeAuthorizationCode(String code) {
 
         java.net.URI uri = UriComponentsBuilder
                 .fromUriString(
@@ -89,7 +80,6 @@ public class MetaGraphService {
                 .queryParam("client_id", appId)
                 .queryParam("client_secret", appSecret)
                 .queryParam("code", code)
-                .queryParam("redirect_uri", actualRedirectUri)
                 .build()
                 .toUri();
 

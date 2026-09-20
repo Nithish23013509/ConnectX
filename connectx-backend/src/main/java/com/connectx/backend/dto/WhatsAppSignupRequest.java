@@ -8,6 +8,4 @@ public class WhatsAppSignupRequest {
 
     @NotBlank
     private String code;
-
-    private String redirectUri;
 }
