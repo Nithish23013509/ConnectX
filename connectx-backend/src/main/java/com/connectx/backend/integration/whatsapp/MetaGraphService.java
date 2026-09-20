@@ -4,9 +4,9 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
 
 @Service
 @RequiredArgsConstructor
@@ -21,45 +21,84 @@ public class MetaGraphService {
     @Value("${meta.graph-api-version}")
     private String graphApiVersion;
 
-    private final ObjectMapper objectMapper =
-            new ObjectMapper();
+    @Value("${meta.system-user-access-token}")
+    private String systemUserAccessToken;
 
-    private final RestTemplate restTemplate =
-            new RestTemplate();
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
-    public String exchangeAuthorizationCode(String code) {
+    private final RestTemplate restTemplate = new RestTemplate();
 
-        String url =
-                "https://graph.facebook.com/"
-                        + graphApiVersion
-                        + "/oauth/access_token"
-                        + "?client_id=" + appId
-                        + "&client_secret=" + appSecret
-                        + "&code=" + code;
+    public JsonNode debugToken(String oauthUserToken) {
 
-        ResponseEntity<String> response =
-                restTemplate.getForEntity(
+        String url = UriComponentsBuilder
+                .fromUriString(
+                        "https://graph.facebook.com/"
+                                + graphApiVersion
+                                + "/debug_token"
+                )
+                .queryParam("input_token", oauthUserToken)
+                .build()
+                .toUriString();
+
+        org.springframework.http.HttpHeaders headers = new org.springframework.http.HttpHeaders();
+        headers.setBearerAuth(systemUserAccessToken);
+
+        org.springframework.http.HttpEntity<Void> entity =
+                new org.springframework.http.HttpEntity<>(headers);
+
+        org.springframework.http.ResponseEntity<String> response =
+                restTemplate.exchange(
                         url,
+                        org.springframework.http.HttpMethod.GET,
+                        entity,
                         String.class
                 );
 
-        if (!response.getStatusCode().is2xxSuccessful()) {
+        try {
+
+            return objectMapper.readTree(
+                    response.getBody()
+            );
+
+        } catch (Exception e) {
+
             throw new RuntimeException(
-                    "Meta authorization exchange failed"
+                    "Failed to parse Meta debug token response",
+                    e
             );
         }
+    }
+
+    public String exchangeAuthorizationCode(String code) {
+
+        String url = UriComponentsBuilder
+                .fromUriString(
+                        "https://graph.facebook.com/"
+                                + graphApiVersion
+                                + "/oauth/access_token"
+                )
+                .queryParam("client_id", appId)
+                .queryParam("client_secret", appSecret)
+                .queryParam("code", code)
+                .build()
+                .toUriString();
 
         try {
 
+            String response = restTemplate.getForObject(
+                    url,
+                    String.class
+            );
+
             JsonNode json =
-                    objectMapper.readTree(
-                            response.getBody()
-                    );
+                    objectMapper.readTree(response);
 
             JsonNode accessToken =
                     json.get("access_token");
 
-            if (accessToken == null) {
+            if (accessToken == null ||
+                    accessToken.asText().isBlank()) {
+
                 throw new RuntimeException(
                         "Meta did not return an access token"
                 );
@@ -70,7 +109,7 @@ public class MetaGraphService {
         } catch (Exception e) {
 
             throw new RuntimeException(
-                    "Invalid Meta response",
+                    "Failed to exchange Meta authorization code",
                     e
             );
         }
