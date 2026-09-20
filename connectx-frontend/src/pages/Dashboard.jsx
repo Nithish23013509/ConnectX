@@ -35,8 +35,10 @@ function Dashboard() {
                     }
                 );
             } catch (error) {
-                localStorage.removeItem("connectx_token");
-                navigate("/login");
+                console.error("Dashboard loading error:", error);
+                // Temporarily disable auto-logout on error so we can debug Vercel
+                // localStorage.removeItem("connectx_token");
+                // navigate("/login");
             } finally {
                 setLoading(false);
             }
