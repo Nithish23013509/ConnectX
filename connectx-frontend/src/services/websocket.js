@@ -8,9 +8,7 @@ export const connectWebSocket = (
 ) => {
 
     client = new Client({
-
-        brokerURL: "ws://localhost:8080/ws",
-
+        brokerURL: "wss://happening-eating-giveaway.ngrok-free.dev/ws",
         reconnectDelay: 5000,
 
         onConnect: () => {
