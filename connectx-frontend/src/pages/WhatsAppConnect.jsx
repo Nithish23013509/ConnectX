@@ -18,9 +18,10 @@ function WhatsAppConnect() {
         setMessage("");
 
         window.FB.login(
-            async (response) => {
-                console.log("Embedded Signup response:", response);
-                setLoading(false);
+            (response) => {
+                const handleResponse = async () => {
+                    console.log("Embedded Signup response:", response);
+                    setLoading(false);
 
                 if (response.authResponse?.code) {
                     const code = response.authResponse.code;
@@ -57,6 +58,8 @@ function WhatsAppConnect() {
                     setMessage("WhatsApp connection was cancelled or unsuccessful.");
                     setIsSuccess(false);
                 }
+                };
+                handleResponse();
             },
             {
                 config_id: "3428342227347876",
