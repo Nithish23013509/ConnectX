@@ -46,6 +46,15 @@ function App() {
                     }
                 />
 
+                <Route
+                    path="/whatsapp/callback"
+                    element={
+                        <ProtectedRoute>
+                            <WhatsAppConnect />
+                        </ProtectedRoute>
+                    }
+                />
+
             </Routes>
 
         </BrowserRouter>

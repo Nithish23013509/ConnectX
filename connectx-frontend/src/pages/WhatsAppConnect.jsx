@@ -54,6 +54,7 @@ function WhatsAppConnect() {
                 config_id: "3428342227347876",
                 response_type: "code",
                 override_default_response_type: true,
+                redirect_uri: "https://connectx-frontend-ruby.vercel.app/whatsapp/callback",
                 extras: {
                     setup: {}
                 }

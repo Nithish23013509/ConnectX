@@ -24,6 +24,9 @@ public class MetaGraphService {
     @Value("${meta.system-user-access-token}")
     private String systemUserAccessToken;
 
+    @Value("${meta.redirect-uri}")
+    private String redirectUri;
+
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     private final RestTemplate restTemplate = new RestTemplate();
@@ -80,6 +83,7 @@ public class MetaGraphService {
                 .queryParam("client_id", appId)
                 .queryParam("client_secret", appSecret)
                 .queryParam("code", code)
+                .queryParam("redirect_uri", redirectUri)
                 .build()
                 .toUriString();
 
