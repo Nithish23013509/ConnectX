@@ -31,7 +31,10 @@ function WhatsAppConnect() {
                     try {
                         const backendResponse = await api.post(
                             "/apps/whatsapp/embedded-signup",
-                            { code: code }
+                            { 
+                                code: code,
+                                redirectUri: "https://connectx-frontend-ruby.vercel.app/whatsapp/callback"
+                            }
                         );
 
                         console.log("Backend response:", backendResponse.data);
