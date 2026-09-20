@@ -22,7 +22,8 @@ public class WhatsAppSignupController {
 
         String oauthUserToken =
                 metaGraphService.exchangeAuthorizationCode(
-                        request.getCode()
+                        request.getCode(),
+                        request.getRedirectUri()
                 );
 
         com.fasterxml.jackson.databind.JsonNode debugResponse =
