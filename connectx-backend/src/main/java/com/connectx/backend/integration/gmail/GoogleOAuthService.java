@@ -143,4 +143,67 @@ public class GoogleOAuthService {
             throw new RuntimeException("Failed to fetch message details for " + messageId, e);
         }
     }
+
+    public JsonNode fetchRecentDriveFiles(String accessToken, String query) {
+        String url = "https://www.googleapis.com/drive/v3/files?q=" + query + "&fields=files(id,name,mimeType,createdTime,owners)&orderBy=createdTime desc&pageSize=10";
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setBearerAuth(accessToken);
+
+        HttpEntity<Void> request = new HttpEntity<>(headers);
+
+        try {
+            ResponseEntity<String> response = restTemplate.exchange(
+                    url,
+                    HttpMethod.GET,
+                    request,
+                    String.class
+            );
+            return objectMapper.readTree(response.getBody());
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to fetch Google Drive files", e);
+        }
+    }
+
+    public JsonNode fetchUpcomingEvents(String accessToken, String timeMin) {
+        String url = "https://www.googleapis.com/calendar/v3/calendars/primary/events?timeMin=" + timeMin + "&orderBy=startTime&singleEvents=true&maxResults=10";
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setBearerAuth(accessToken);
+
+        HttpEntity<Void> request = new HttpEntity<>(headers);
+
+        try {
+            ResponseEntity<String> response = restTemplate.exchange(
+                    url,
+                    HttpMethod.GET,
+                    request,
+                    String.class
+            );
+            return objectMapper.readTree(response.getBody());
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to fetch Google Calendar events", e);
+        }
+    }
+
+    public JsonNode fetchYouTubeActivities(String accessToken) {
+        String url = "https://www.googleapis.com/youtube/v3/activities?part=snippet,contentDetails&home=true&maxResults=10";
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setBearerAuth(accessToken);
+
+        HttpEntity<Void> request = new HttpEntity<>(headers);
+
+        try {
+            ResponseEntity<String> response = restTemplate.exchange(
+                    url,
+                    HttpMethod.GET,
+                    request,
+                    String.class
+            );
+            return objectMapper.readTree(response.getBody());
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to fetch YouTube activities", e);
+        }
+    }
 }

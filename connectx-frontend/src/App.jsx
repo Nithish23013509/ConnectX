@@ -6,6 +6,9 @@ import Dashboard from "./pages/Dashboard";
 import ProtectedRoute from "./components/ProtectedRoute";
 import WhatsAppConnect from "./pages/WhatsAppConnect";
 import GmailConnect from "./pages/GmailConnect";
+import GoogleDriveConnect from "./pages/GoogleDriveConnect";
+import GoogleCalendarConnect from "./pages/GoogleCalendarConnect";
+import YouTubeConnect from "./pages/YouTubeConnect";
 
 function App() {
 
@@ -52,6 +55,33 @@ function App() {
                     element={
                         <ProtectedRoute>
                             <GmailConnect />
+                        </ProtectedRoute>
+                    }
+                />
+
+                <Route
+                    path="/connect/drive"
+                    element={
+                        <ProtectedRoute>
+                            <GoogleDriveConnect />
+                        </ProtectedRoute>
+                    }
+                />
+
+                <Route
+                    path="/connect/calendar"
+                    element={
+                        <ProtectedRoute>
+                            <GoogleCalendarConnect />
+                        </ProtectedRoute>
+                    }
+                />
+
+                <Route
+                    path="/connect/youtube"
+                    element={
+                        <ProtectedRoute>
+                            <YouTubeConnect />
                         </ProtectedRoute>
                     }
                 />

@@ -28,7 +28,8 @@ public class ConnectedAppController {
             "GMAIL", "Gmail",
             "GITHUB", "GitHub",
             "GOOGLE_DRIVE", "Google Drive",
-            "GOOGLE_CALENDAR", "Google Calendar"
+            "GOOGLE_CALENDAR", "Google Calendar",
+            "YOUTUBE", "YouTube"
     );
 
     @GetMapping

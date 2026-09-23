@@ -154,6 +154,12 @@ function Dashboard() {
                                                     navigate("/connect/whatsapp");
                                                 } else if (app.provider === "GMAIL") {
                                                     navigate("/connect/gmail");
+                                                } else if (app.provider === "GOOGLE_DRIVE") {
+                                                    navigate("/connect/drive");
+                                                } else if (app.provider === "GOOGLE_CALENDAR") {
+                                                    navigate("/connect/calendar");
+                                                } else if (app.provider === "YOUTUBE") {
+                                                    navigate("/connect/youtube");
                                                 }
                                             }}
                                         >
