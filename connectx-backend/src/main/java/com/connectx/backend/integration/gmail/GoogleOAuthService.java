@@ -77,4 +77,70 @@ public class GoogleOAuthService {
             throw new RuntimeException("Failed to fetch Google user profile", e);
         }
     }
+
+    public String refreshAccessToken(String refreshToken) {
+        String tokenUrl = "https://oauth2.googleapis.com/token";
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+
+        MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
+        body.add("client_id", clientId);
+        body.add("client_secret", clientSecret);
+        body.add("refresh_token", refreshToken);
+        body.add("grant_type", "refresh_token");
+
+        HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(body, headers);
+
+        try {
+            ResponseEntity<String> response = restTemplate.postForEntity(tokenUrl, request, String.class);
+            JsonNode jsonNode = objectMapper.readTree(response.getBody());
+            return jsonNode.get("access_token").asText();
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to refresh Google access token", e);
+        }
+    }
+
+    public JsonNode fetchUnreadEmails(String accessToken, String query) {
+        String url = "https://gmail.googleapis.com/gmail/v1/users/me/messages?q=" + query;
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setBearerAuth(accessToken);
+
+        HttpEntity<Void> request = new HttpEntity<>(headers);
+
+        try {
+            ResponseEntity<String> response = restTemplate.exchange(
+                    url,
+                    HttpMethod.GET,
+                    request,
+                    String.class
+            );
+            return objectMapper.readTree(response.getBody());
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to fetch unread emails", e);
+        }
+    }
+
+    public JsonNode getMessageDetails(String accessToken, String messageId) {
+        String url = "https://gmail.googleapis.com/gmail/v1/users/me/messages/" + messageId 
+            + "?format=metadata&metadataHeaders=Subject&metadataHeaders=From";
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setBearerAuth(accessToken);
+
+        HttpEntity<Void> request = new HttpEntity<>(headers);
+
+        try {
+            ResponseEntity<String> response = restTemplate.exchange(
+                    url,
+                    HttpMethod.GET,
+                    request,
+                    String.class
+            );
+            return objectMapper.readTree(response.getBody());
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to fetch message details for " + messageId, e);
+        }
+    }
 }

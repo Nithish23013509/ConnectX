@@ -58,6 +58,11 @@ public class GmailSignupController {
         connectedApp.setAccountEmail(email);
         connectedApp.setAccountName(name);
         connectedApp.setExternalAccountId(googleId);
+        connectedApp.setAccessToken(accessToken);
+        
+        if (tokenResponse.has("refresh_token")) {
+            connectedApp.setRefreshToken(tokenResponse.get("refresh_token").asText());
+        }
         
         if (connectedApp.getId() == null) {
             connectedApp.setConnectedAt(LocalDateTime.now());

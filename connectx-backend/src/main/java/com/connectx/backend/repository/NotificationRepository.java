@@ -14,7 +14,8 @@ public interface NotificationRepository
             User user
     );
 
-    boolean existsByExternalMessageId(
-            String externalMessageId
+    boolean existsByExternalMessageIdAndProvider(
+            String externalMessageId,
+            String provider
     );
 }

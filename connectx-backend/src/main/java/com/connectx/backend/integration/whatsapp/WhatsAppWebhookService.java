@@ -109,7 +109,7 @@ public class WhatsAppWebhookService {
         }
 
         if (notificationRepository
-                .existsByExternalMessageId(messageId)) {
+                .existsByExternalMessageIdAndProvider(messageId, "WHATSAPP")) {
 
             return;
         }

@@ -32,6 +32,14 @@ public class ConnectedApp {
 
     private String externalPhoneNumberId;
 
+    @Column(columnDefinition = "TEXT")
+    private String accessToken;
+
+    @Column(columnDefinition = "TEXT")
+    private String refreshToken;
+
+    private LocalDateTime lastSyncedAt;
+
     private LocalDateTime connectedAt;
 
     private LocalDateTime updatedAt;
