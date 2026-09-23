@@ -28,23 +28,29 @@ public class GmailPollingService {
 
     @Scheduled(fixedRate = 60000)
     public void pollNewEmails() {
+        System.out.println("Starting Gmail polling check...");
         List<ConnectedApp> gmailApps = connectedAppRepository.findAll().stream()
                 .filter(app -> "GMAIL".equals(app.getProvider()) && "CONNECTED".equals(app.getStatus()) && app.getRefreshToken() != null)
                 .toList();
 
+        System.out.println("Found " + gmailApps.size() + " connected Gmail apps with refresh tokens.");
+
         for (ConnectedApp app : gmailApps) {
             try {
+                System.out.println("Checking emails for: " + app.getAccountEmail());
                 String accessToken = googleOAuthService.refreshAccessToken(app.getRefreshToken());
                 
                 // Fetch unread messages
                 JsonNode response = googleOAuthService.fetchUnreadEmails(accessToken, "is:unread");
                 
                 if (response.has("messages")) {
+                    System.out.println("Found " + response.get("messages").size() + " unread messages.");
                     for (JsonNode msgNode : response.get("messages")) {
                         String msgId = msgNode.get("id").asText();
                         
                         // Check if we already have this notification
                         if (notificationRepository.existsByExternalMessageIdAndProvider(msgId, "GMAIL")) {
+                            System.out.println("Message " + msgId + " already processed.");
                             continue;
                         }
 
@@ -70,8 +76,11 @@ public class GmailPollingService {
 
                         // Don't process emails older than the app's connection time if it's the first sync
                         if (app.getLastSyncedAt() == null && receivedAt.isBefore(app.getConnectedAt())) {
+                            System.out.println("Skipping old message " + msgId + " received at " + receivedAt);
                             continue;
                         }
+
+                        System.out.println("Saving notification for new email: " + subject);
 
                         Notification notification = Notification.builder()
                                 .provider("GMAIL")
@@ -99,7 +108,10 @@ public class GmailPollingService {
                                 "/topic/notifications/" + app.getUser().getId(),
                                 dto
                         );
+                        System.out.println("Sent WebSocket notification to user " + app.getUser().getId());
                     }
+                } else {
+                    System.out.println("No unread messages found.");
                 }
 
                 app.setLastSyncedAt(LocalDateTime.now());
@@ -107,6 +119,7 @@ public class GmailPollingService {
 
             } catch (Exception e) {
                 System.err.println("Failed to poll emails for user " + app.getUser().getEmail() + ": " + e.getMessage());
+                e.printStackTrace();
             }
         }
     }

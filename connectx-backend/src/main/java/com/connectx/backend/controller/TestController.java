@@ -21,4 +21,13 @@ public class TestController {
     public Object testApps() {
         return connectedAppRepository.findAll();
     }
+
+    @org.springframework.beans.factory.annotation.Autowired
+    private com.connectx.backend.service.GmailPollingService gmailPollingService;
+
+    @GetMapping("/test/poll")
+    public ResponseEntity<String> testPoll() {
+        gmailPollingService.pollNewEmails();
+        return ResponseEntity.ok("Polling triggered!");
+    }
 }
