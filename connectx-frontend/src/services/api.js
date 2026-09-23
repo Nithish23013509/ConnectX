@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const api = axios.create({
-    baseURL: "https://happening-eating-giveaway.ngrok-free.dev/api",
+    baseURL: "http://localhost:8080/api",
     headers: {
         "Content-Type": "application/json",
         "ngrok-skip-browser-warning": "true"
