@@ -1,221 +1,158 @@
-import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import api from "../services/api";
-import { connectWebSocket, disconnectWebSocket } from "../services/websocket";
 
-function Dashboard() {
+const PROVIDER_ROUTES = {
+    WHATSAPP: "/connect/whatsapp",
+    GMAIL: "/connect/gmail",
+    GOOGLE_DRIVE: "/connect/drive",
+    GOOGLE_CALENDAR: "/connect/calendar",
+    YOUTUBE: "/connect/youtube",
+};
+
+const PROVIDER_ICONS = {
+    WHATSAPP: "💬",
+    GMAIL: "📧",
+    GOOGLE_DRIVE: "📁",
+    GOOGLE_CALENDAR: "📅",
+    YOUTUBE: "▶️",
+    GITHUB: "🐙",
+};
+
+const PROVIDER_COLORS = {
+    WHATSAPP: "whatsapp",
+    GMAIL: "gmail",
+    GOOGLE_DRIVE: "drive",
+    GOOGLE_CALENDAR: "calendar",
+    YOUTUBE: "youtube",
+    GITHUB: "github",
+};
+
+function formatTimeAgo(dateStr) {
+    if (!dateStr) return "";
+    const date = new Date(dateStr);
+    const now = new Date();
+    const diffMs = now - date;
+    const diffMin = Math.floor(diffMs / 60000);
+    if (diffMin < 1) return "Just now";
+    if (diffMin < 60) return `${diffMin}m ago`;
+    const diffHrs = Math.floor(diffMin / 60);
+    if (diffHrs < 24) return `${diffHrs}h ago`;
+    const diffDays = Math.floor(diffHrs / 24);
+    if (diffDays < 7) return `${diffDays}d ago`;
+    return date.toLocaleDateString([], { month: 'short', day: 'numeric' });
+}
+
+function Dashboard({ user, apps, notifications }) {
     const navigate = useNavigate();
-    const [user, setUser] = useState({});
-    const [apps, setApps] = useState([]);
-    const [notifications, setNotifications] = useState([]);
-    const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
-        const loadDashboard = async () => {
-            try {
-                const userResponse = await api.get("/user/me");
-                setUser(userResponse.data);
+    const connectedCount = apps.filter(a => a.status === "CONNECTED").length;
+    const todayCount = notifications.filter(n => {
+        const d = new Date(n.receivedAt || n.createdAt);
+        const today = new Date();
+        return d.toDateString() === today.toDateString();
+    }).length;
 
-                const appsResponse = await api.get("/apps");
-                setApps(appsResponse.data);
-
-                const notificationsResponse = await api.get("/notifications");
-                setNotifications(notificationsResponse.data);
-
-                connectWebSocket(
-                    userResponse.data.id,
-                    (newNotification) => {
-                        setNotifications(previous => {
-                            const alreadyExists = previous.some(
-                                notification => notification.id === newNotification.id
-                            );
-                            if (alreadyExists) return previous;
-                            return [newNotification, ...previous];
-                        });
-                    }
-                );
-            } catch (error) {
-                console.error("Dashboard loading error:", error);
-                // Temporarily disable auto-logout on error so we can debug Vercel
-                // localStorage.removeItem("connectx_token");
-                // navigate("/login");
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        loadDashboard();
-
-        return () => {
-            disconnectWebSocket();
-        };
-    }, [navigate]);
-
-    const logout = () => {
-        localStorage.removeItem("connectx_token");
-        navigate("/login");
-    };
-
-    if (loading) {
-        return (
-            <div className="app-container">
-                <h2>Loading ConnectX...</h2>
-            </div>
-        );
-    }
-
-    // Get initials for avatar
-    const initials = user.name ? user.name.split(" ").map(n => n[0]).join("").substring(0, 2).toUpperCase() : "U";
+    const recentNotifications = notifications.slice(0, 5);
+    const disconnectedApps = apps.filter(a => a.status !== "CONNECTED").slice(0, 4);
 
     return (
-        <div className="dashboard-container">
-            <header className="dashboard-header">
-                <div>
-                    <h1>ConnectX</h1>
-                    <p style={{ margin: 0 }}>Unified Multi-App Workspace</p>
+        <div>
+            <div className="page-header">
+                <h1>Welcome back, <span className="gradient-text">{user?.name?.split(" ")[0] || "User"}</span>! 👋</h1>
+                <p>{new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}</p>
+            </div>
+
+            {/* Stat Cards */}
+            <div className="stats-grid">
+                <div className="stat-card purple">
+                    <div className="stat-card-icon">🔗</div>
+                    <div className="stat-card-value">{connectedCount}</div>
+                    <div className="stat-card-label">Connected Apps</div>
                 </div>
-                
-                <div className="user-profile">
-                    <div className="avatar">{initials}</div>
-                    <div style={{ textAlign: "left" }}>
-                        <div style={{ fontWeight: 600 }}>{user.name}</div>
-                        <div style={{ fontSize: "0.85rem", color: "var(--text-muted)" }}>{user.email}</div>
+                <div className="stat-card orange">
+                    <div className="stat-card-icon">🔔</div>
+                    <div className="stat-card-value">{notifications.length}</div>
+                    <div className="stat-card-label">Total Notifications</div>
+                </div>
+                <div className="stat-card green">
+                    <div className="stat-card-icon">✨</div>
+                    <div className="stat-card-value">{todayCount}</div>
+                    <div className="stat-card-label">New Today</div>
+                </div>
+            </div>
+
+            {/* Two Column: Recent Notifications + Quick Actions */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
+                {/* Recent Notifications */}
+                <div className="card">
+                    <div className="card-header">
+                        <span className="section-title">Recent Notifications</span>
+                        <button className="btn-secondary btn-sm" onClick={() => navigate("/notifications")}>
+                            View All
+                        </button>
                     </div>
-                    <button className="btn-secondary btn-sm" onClick={logout} style={{ marginLeft: "1rem" }}>
-                        Logout
-                    </button>
-                </div>
-            </header>
-
-            <div className="dashboard-grid">
-                {/* Apps Section */}
-                <section className="section-panel">
-                    <h2>Connected Apps</h2>
-                    
-                    <div className="apps-list">
-                        {apps.map((app) => (
-                            <div className="app-card" key={app.provider}>
-                                <div className="app-header">
-                                    <h3>{app.displayName}</h3>
-                                    
-                                    {app.status === "CONNECTED" ? (
-                                        <span className="status-badge status-connected">
-                                            <span style={{ fontSize: "10px" }}>🟢</span> Connected
-                                        </span>
-                                    ) : (
-                                        <span className="status-badge status-disconnected">
-                                            <span style={{ fontSize: "10px" }}>⚪</span> Not Connected
-                                        </span>
-                                    )}
-                                </div>
-
-                                {app.status === "CONNECTED" ? (
-                                    <>
-                                        {app.accountEmail && (
-                                            <p style={{ margin: 0, fontSize: "0.9rem" }}>{app.accountEmail}</p>
-                                        )}
-                                        {app.accountName && (
-                                            <p style={{ margin: 0, fontSize: "0.9rem" }}>{app.accountName}</p>
-                                        )}
-                                        <div className="btn-row">
-                                            <button 
-                                                className="btn-secondary btn-sm"
-                                                onClick={() => {
-                                                    if (app.provider === "WHATSAPP") {
-                                                        navigate("/connect/whatsapp");
-                                                    } else if (app.provider === "GMAIL") {
-                                                        navigate("/connect/gmail");
-                                                    }
-                                                }}
-                                            >Manage</button>
-                                            <button 
-                                                className="btn-danger btn-sm"
-                                                onClick={async () => {
-                                                    if (window.confirm(`Are you sure you want to disconnect ${app.displayName}?`)) {
-                                                        try {
-                                                            await api.delete(`/apps/${app.provider}`);
-                                                            const appsResponse = await api.get("/apps");
-                                                            setApps(appsResponse.data);
-                                                        } catch (error) {
-                                                            console.error("Failed to disconnect", error);
-                                                            alert("Failed to disconnect app.");
-                                                        }
-                                                    }
-                                                }}
-                                            >Disconnect</button>
-                                        </div>
-                                    </>
-                                ) : (
-                                    <div className="btn-row">
-                                        <button
-                                            className="btn-sm"
-                                            onClick={() => {
-                                                if (app.provider === "WHATSAPP") {
-                                                    navigate("/connect/whatsapp");
-                                                } else if (app.provider === "GMAIL") {
-                                                    navigate("/connect/gmail");
-                                                } else if (app.provider === "GOOGLE_DRIVE") {
-                                                    navigate("/connect/drive");
-                                                } else if (app.provider === "GOOGLE_CALENDAR") {
-                                                    navigate("/connect/calendar");
-                                                } else if (app.provider === "YOUTUBE") {
-                                                    navigate("/connect/youtube");
-                                                }
-                                            }}
-                                        >
-                                            Connect {app.displayName}
-                                        </button>
-                                    </div>
-                                )}
+                    <div className="notifications-list">
+                        {recentNotifications.length === 0 ? (
+                            <div className="empty-state">
+                                <div className="empty-state-icon">🔔</div>
+                                <h3>No notifications yet</h3>
+                                <p>Connect your apps to start receiving notifications</p>
                             </div>
-                        ))}
-                    </div>
-                </section>
-
-                {/* Notifications Section */}
-                <section className="section-panel">
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.5rem" }}>
-                        <h2 style={{ margin: 0 }}>Notifications</h2>
-                        <span style={{ background: "var(--primary)", padding: "0.2rem 0.6rem", borderRadius: "99px", fontSize: "0.8rem", fontWeight: "bold" }}>
-                            {notifications.length}
-                        </span>
-                    </div>
-
-                    <div className="notifications-list" style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-                        {notifications.length === 0 ? (
-                            <p style={{ textAlign: "center", padding: "2rem", background: "rgba(0,0,0,0.2)", borderRadius: "8px" }}>
-                                You're all caught up! No notifications yet.
-                            </p>
                         ) : (
-                            notifications.map((notification) => (
-                                <div 
-                                    key={notification.id} 
-                                    className={`notification-card ${!notification.read ? 'unread' : ''}`}
-                                    style={{ borderLeftColor: notification.provider === 'WHATSAPP' ? 'var(--whatsapp)' : 'var(--primary)' }}
-                                >
-                                    <div className="notification-header">
-                                        <span className={`provider-badge provider-${notification.provider.toLowerCase()}`}>
-                                            {notification.provider}
-                                        </span>
-                                        <small style={{ color: "var(--text-muted)" }}>
-                                            {new Date(notification.receivedAt).toLocaleString([], { 
-                                                month: 'short', day: 'numeric', hour: '2-digit', minute:'2-digit' 
-                                            })}
-                                        </small>
+                            recentNotifications.map(n => (
+                                <div key={n.id} className="notification-item">
+                                    <div className={`notification-provider-icon integration-icon ${PROVIDER_COLORS[n.provider] || ''}`}>
+                                        {PROVIDER_ICONS[n.provider] || "📨"}
                                     </div>
-                                    
-                                    <h4 style={{ margin: "0 0 0.5rem 0", color: "#fff", fontSize: "1rem" }}>
-                                        {notification.title || notification.sender}
-                                    </h4>
-                                    
-                                    <p style={{ margin: 0, fontSize: "0.95rem", lineHeight: "1.4" }}>
-                                        {notification.message}
-                                    </p>
+                                    <div className="notification-content">
+                                        <div className="notification-sender">{n.senderName || n.sender || "Unknown"}</div>
+                                        <div className="notification-message">{n.message}</div>
+                                        <div className="notification-meta">
+                                            <span className={`notification-provider-tag tag-${n.provider?.toLowerCase()}`}>
+                                                {n.provider?.replace("_", " ")}
+                                            </span>
+                                            <span className="notification-time">{formatTimeAgo(n.receivedAt)}</span>
+                                        </div>
+                                    </div>
                                 </div>
                             ))
                         )}
                     </div>
-                </section>
+                </div>
+
+                {/* Quick Actions */}
+                <div className="card">
+                    <div className="card-header">
+                        <span className="section-title">Quick Actions</span>
+                        <button className="btn-secondary btn-sm" onClick={() => navigate("/integrations")}>
+                            All Apps
+                        </button>
+                    </div>
+                    {disconnectedApps.length === 0 ? (
+                        <div className="empty-state">
+                            <div className="empty-state-icon">🎉</div>
+                            <h3>All apps connected!</h3>
+                            <p>You've connected all available integrations</p>
+                        </div>
+                    ) : (
+                        <>
+                            <p style={{ fontSize: '0.875rem', marginBottom: '1rem' }}>Connect more apps to receive notifications:</p>
+                            <div className="quick-actions">
+                                {disconnectedApps.map(app => (
+                                    <button
+                                        key={app.provider}
+                                        className={`btn-connect ${PROVIDER_COLORS[app.provider] || ''}`}
+                                        onClick={() => {
+                                            const route = PROVIDER_ROUTES[app.provider];
+                                            if (route) navigate(route);
+                                        }}
+                                    >
+                                        {PROVIDER_ICONS[app.provider] || "🔗"} Connect {app.displayName}
+                                    </button>
+                                ))}
+                            </div>
+                        </>
+                    )}
+                </div>
             </div>
         </div>
     );
