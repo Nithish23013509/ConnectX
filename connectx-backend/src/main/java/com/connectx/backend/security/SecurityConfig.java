@@ -49,7 +49,7 @@ public class SecurityConfig {
 
                         .requestMatchers(
                                 "/api/auth/**",
-                                "/api/test",
+                                "/api/test/**",
                                 "/api/webhooks/whatsapp/**",
                                 "/ws/**"
                         ).permitAll()

@@ -98,10 +98,12 @@ public class GmailPollingService {
                         NotificationResponse dto = NotificationResponse.builder()
                                 .id(notification.getId())
                                 .provider(notification.getProvider())
-                                .sender(notification.getSenderName())
+                                .senderName(notification.getSenderName())
+                                .senderIdentifier(notification.getSenderIdentifier())
                                 .message(notification.getMessage())
+                                .messageType(notification.getMessageType())
                                 .receivedAt(notification.getReceivedAt())
-                                .read(notification.isRead())
+                                .createdAt(notification.getCreatedAt())
                                 .build();
 
                         messagingTemplate.convertAndSend(
