@@ -29,6 +29,12 @@ function Login() {
 
     return (
         <div className="auth-container">
+            <div className="bg-orbs">
+                <div className="orb orb-1"></div>
+                <div className="orb orb-2"></div>
+                <div className="orb orb-3"></div>
+            </div>
+            
             <div className="auth-card">
                 <div style={{ textAlign: 'center', marginBottom: '0.5rem' }}>
                     <div className="sidebar-logo-icon" style={{ margin: '0 auto 1rem', width: 52, height: 52, fontSize: '1.4rem' }}>CX</div>

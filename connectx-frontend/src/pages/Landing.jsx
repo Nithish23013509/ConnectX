@@ -19,6 +19,12 @@ function Landing() {
 
     return (
         <div className="landing-page">
+            <div className="bg-orbs">
+                <div className="orb orb-1"></div>
+                <div className="orb orb-2"></div>
+                <div className="orb orb-3"></div>
+            </div>
+            
             <nav className="landing-nav">
                 <div className="landing-nav-logo">
                     <div className="sidebar-logo-icon">CX</div>

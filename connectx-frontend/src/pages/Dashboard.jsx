@@ -63,17 +63,17 @@ function Dashboard({ user, apps, notifications }) {
 
             {/* Stat Cards */}
             <div className="stats-grid">
-                <div className="stat-card purple">
+                <div className="stat-card glass-gradient-purple">
                     <div className="stat-card-icon">🔗</div>
                     <div className="stat-card-value">{connectedCount}</div>
                     <div className="stat-card-label">Connected Apps</div>
                 </div>
-                <div className="stat-card orange">
+                <div className="stat-card glass-gradient-pink">
                     <div className="stat-card-icon">🔔</div>
                     <div className="stat-card-value">{notifications.length}</div>
                     <div className="stat-card-label">Total Notifications</div>
                 </div>
-                <div className="stat-card green">
+                <div className="stat-card glass-gradient-blue">
                     <div className="stat-card-icon">✨</div>
                     <div className="stat-card-value">{todayCount}</div>
                     <div className="stat-card-label">New Today</div>
