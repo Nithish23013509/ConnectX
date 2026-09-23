@@ -5,6 +5,7 @@ import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
 import ProtectedRoute from "./components/ProtectedRoute";
 import WhatsAppConnect from "./pages/WhatsAppConnect";
+import GmailConnect from "./pages/GmailConnect";
 
 function App() {
 
@@ -42,6 +43,15 @@ function App() {
                     element={
                         <ProtectedRoute>
                             <WhatsAppConnect />
+                        </ProtectedRoute>
+                    }
+                />
+
+                <Route
+                    path="/connect/gmail"
+                    element={
+                        <ProtectedRoute>
+                            <GmailConnect />
                         </ProtectedRoute>
                     }
                 />

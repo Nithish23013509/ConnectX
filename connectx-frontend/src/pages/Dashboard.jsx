@@ -123,6 +123,8 @@ function Dashboard() {
                                                 onClick={() => {
                                                     if (app.provider === "WHATSAPP") {
                                                         navigate("/connect/whatsapp");
+                                                    } else if (app.provider === "GMAIL") {
+                                                        navigate("/connect/gmail");
                                                     }
                                                 }}
                                             >Manage</button>
@@ -150,6 +152,8 @@ function Dashboard() {
                                             onClick={() => {
                                                 if (app.provider === "WHATSAPP") {
                                                     navigate("/connect/whatsapp");
+                                                } else if (app.provider === "GMAIL") {
+                                                    navigate("/connect/gmail");
                                                 }
                                             }}
                                         >
