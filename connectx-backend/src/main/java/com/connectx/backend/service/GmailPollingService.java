@@ -74,8 +74,8 @@ public class GmailPollingService {
                         String internalDateStr = msgDetails.has("internalDate") ? msgDetails.get("internalDate").asText() : String.valueOf(System.currentTimeMillis());
                         LocalDateTime receivedAt = LocalDateTime.ofInstant(Instant.ofEpochMilli(Long.parseLong(internalDateStr)), ZoneId.systemDefault());
 
-                        // Don't process emails older than the app's connection time if it's the first sync
-                        if (app.getLastSyncedAt() == null && receivedAt.isBefore(app.getConnectedAt())) {
+                        LocalDateTime threshold = app.getLastSyncedAt() != null ? app.getLastSyncedAt() : app.getConnectedAt();
+                        if (receivedAt.isBefore(threshold)) {
                             System.out.println("Skipping old message " + msgId + " received at " + receivedAt);
                             continue;
                         }
