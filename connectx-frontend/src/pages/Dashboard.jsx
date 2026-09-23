@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 const PROVIDER_ROUTES = {
@@ -44,14 +45,21 @@ function formatTimeAgo(dateStr) {
 function Dashboard({ user, apps, notifications }) {
     const navigate = useNavigate();
 
-    const connectedCount = apps.filter(a => a.status === "CONNECTED").length;
+    const [filter, setFilter] = useState("ALL");
+    const connectedApps = apps.filter(a => a.status === "CONNECTED");
+    const connectedCount = connectedApps.length;
+    
     const todayCount = notifications.filter(n => {
         const d = new Date(n.receivedAt || n.createdAt);
         const today = new Date();
         return d.toDateString() === today.toDateString();
     }).length;
 
-    const recentNotifications = notifications.slice(0, 5);
+    const filteredNotifications = filter === "ALL" 
+        ? notifications 
+        : notifications.filter(n => n.provider === filter);
+        
+    const recentNotifications = filteredNotifications.slice(0, 5);
     const disconnectedApps = apps.filter(a => a.status !== "CONNECTED").slice(0, 4);
 
     return (
@@ -85,7 +93,9 @@ function Dashboard({ user, apps, notifications }) {
                 {/* Recent Notifications */}
                 <div className="card">
                     <div className="card-header">
-                        <span className="section-title">Recent Notifications</span>
+                        <span className="section-title">
+                            {filter === "ALL" ? "Recent Notifications" : `${connectedApps.find(a => a.provider === filter)?.displayName || ''} Notifications`}
+                        </span>
                         <button className="btn-secondary btn-sm" onClick={() => navigate("/notifications")}>
                             View All
                         </button>
@@ -94,8 +104,8 @@ function Dashboard({ user, apps, notifications }) {
                         {recentNotifications.length === 0 ? (
                             <div className="empty-state">
                                 <div className="empty-state-icon">🔔</div>
-                                <h3>No notifications yet</h3>
-                                <p>Connect your apps to start receiving notifications</p>
+                                <h3>No notifications</h3>
+                                <p>No recent activity for this category.</p>
                             </div>
                         ) : (
                             recentNotifications.map(n => (
@@ -119,23 +129,41 @@ function Dashboard({ user, apps, notifications }) {
                     </div>
                 </div>
 
-                {/* Quick Actions */}
+                {/* Filter and Quick Actions */}
                 <div className="card">
                     <div className="card-header">
-                        <span className="section-title">Quick Actions</span>
+                        <span className="section-title">Your Apps</span>
                         <button className="btn-secondary btn-sm" onClick={() => navigate("/integrations")}>
-                            All Apps
+                            Manage
                         </button>
                     </div>
-                    {disconnectedApps.length === 0 ? (
-                        <div className="empty-state">
-                            <div className="empty-state-icon">🎉</div>
-                            <h3>All apps connected!</h3>
-                            <p>You've connected all available integrations</p>
-                        </div>
-                    ) : (
-                        <>
-                            <p style={{ fontSize: '0.875rem', marginBottom: '1rem' }}>Connect more apps to receive notifications:</p>
+                    
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                        <button 
+                            className={`filter-tab ${filter === "ALL" ? 'active' : ''}`}
+                            style={{ width: '100%', justifyContent: 'flex-start', padding: '0.75rem 1rem', borderRadius: '8px' }}
+                            onClick={() => setFilter("ALL")}
+                        >
+                            <span style={{ width: '24px', textAlign: 'center', marginRight: '8px' }}>📋</span> All Notifications
+                        </button>
+                        {connectedApps.map(app => (
+                            <button
+                                key={app.provider}
+                                className={`filter-tab ${filter === app.provider ? 'active' : ''}`}
+                                style={{ width: '100%', justifyContent: 'flex-start', padding: '0.75rem 1rem', borderRadius: '8px' }}
+                                onClick={() => setFilter(app.provider)}
+                            >
+                                <span style={{ width: '24px', textAlign: 'center', marginRight: '8px' }}>{PROVIDER_ICONS[app.provider] || "🔗"}</span> 
+                                {app.displayName}
+                            </button>
+                        ))}
+                    </div>
+
+                    {disconnectedApps.length > 0 && (
+                        <div style={{ marginTop: '1.5rem', paddingTop: '1.5rem', borderTop: '1px solid var(--glass-border)' }}>
+                            <span className="section-title" style={{ fontSize: '0.9rem', marginBottom: '0.75rem', display: 'block', color: 'var(--text-secondary)' }}>
+                                Connect More Apps
+                            </span>
                             <div className="quick-actions">
                                 {disconnectedApps.map(app => (
                                     <button
@@ -150,7 +178,7 @@ function Dashboard({ user, apps, notifications }) {
                                     </button>
                                 ))}
                             </div>
-                        </>
+                        </div>
                     )}
                 </div>
             </div>
