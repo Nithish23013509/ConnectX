@@ -36,7 +36,7 @@ function GoogleDriveConnect() {
     };
 
     const launchGoogleAuth = () => {
-        const clientId = "900191005045-qha3ejq67maqqgv555bfpkr6u9l35tso.apps.googleusercontent.com";
+        const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
         const redirectUri = window.location.origin + "/connect/drive";
         
         // Scope for readonly drive access and basic profile

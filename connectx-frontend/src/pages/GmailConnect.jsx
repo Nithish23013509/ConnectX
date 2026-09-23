@@ -38,7 +38,7 @@ function GmailConnect() {
     const launchGoogleAuth = () => {
         // You MUST replace this with your actual client ID in production if it's different.
         // It's better to fetch it from backend or env variables.
-        const clientId = "900191005045-qha3ejq67maqqgv555bfpkr6u9l35tso.apps.googleusercontent.com";
+        const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
         const redirectUri = window.location.origin + "/connect/gmail";
         
         // Scope for readonly email access and basic profile
