@@ -13,4 +13,12 @@ public class TestController {
     public ResponseEntity<String> test() {
         return ResponseEntity.ok("Backend is running!");
     }
+
+    @org.springframework.beans.factory.annotation.Autowired
+    private com.connectx.backend.repository.ConnectedAppRepository connectedAppRepository;
+
+    @GetMapping("/test/apps")
+    public Object testApps() {
+        return connectedAppRepository.findAll();
+    }
 }

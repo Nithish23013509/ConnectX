@@ -88,15 +88,22 @@ public class ConnectedAppController {
     }
 
     @DeleteMapping("/{provider}")
-    public void disconnectApp(
+    public org.springframework.http.ResponseEntity<?> disconnectApp(
             @PathVariable String provider,
             Authentication authentication
     ) {
-        User user = userRepository
-                .findByEmail(authentication.getName())
-                .orElseThrow();
+        try {
+            User user = userRepository
+                    .findByEmail(authentication.getName())
+                    .orElseThrow();
 
-        connectedAppRepository.findByUserAndProvider(user, provider)
-                .ifPresent(connectedAppRepository::delete);
+            List<ConnectedApp> apps = connectedAppRepository.findByUserAndProvider(user, provider);
+            connectedAppRepository.deleteAll(apps);
+                    
+            return org.springframework.http.ResponseEntity.ok("Disconnected successfully");
+        } catch (Exception e) {
+            e.printStackTrace();
+            return org.springframework.http.ResponseEntity.internalServerError().body("Error: " + e.getMessage());
+        }
     }
 }

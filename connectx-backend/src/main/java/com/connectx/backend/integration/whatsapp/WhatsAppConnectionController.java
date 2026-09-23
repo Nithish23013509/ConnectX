@@ -39,6 +39,8 @@ public class WhatsAppConnectionController {
                                 user,
                                 "WHATSAPP"
                         )
+                        .stream()
+                        .findFirst()
                         .orElse(
                                 ConnectedApp.builder()
                                         .user(user)

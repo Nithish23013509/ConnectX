@@ -50,6 +50,8 @@ public class GmailSignupController {
 
         ConnectedApp connectedApp = connectedAppRepository
                 .findByUserAndProvider(user, "GMAIL")
+                .stream()
+                .findFirst()
                 .orElse(new ConnectedApp());
 
         connectedApp.setUser(user);

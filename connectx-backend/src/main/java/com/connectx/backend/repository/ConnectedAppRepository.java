@@ -13,7 +13,7 @@ public interface ConnectedAppRepository
 
     List<ConnectedApp> findByUser(User user);
 
-    Optional<ConnectedApp> findByUserAndProvider(
+    List<ConnectedApp> findByUserAndProvider(
             User user,
             String provider
     );
